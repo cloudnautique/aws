@@ -1,0 +1,48 @@
+services: "cdk-context": build: "../../utils/cdk"
+containers: apply: {
+	build: {
+		context: "."
+		additionalContexts: amp: "../../amp"
+		additionalContexts: cdk: "../cdk"
+	}
+	files: "/app/cdk.context.json": "@{services.cdk-context.data.cdkContext}"
+	entrypoint: ["sleep"]
+	command: ["7200"]
+	env: {
+		CDK_DEFAULT_ACCOUNT: "@{secrets.aws-context.account-id}"
+		CDK_DEFAULT_REGION:  "@{secrets.aws-context.aws-region}"
+		VPC_ID:              "@{secrets.aws-context.vpc-id}"
+	}
+	permissions: rules: [
+		{
+			apiGroup: "aws.acorn.io"
+			verbs: [
+				"cloudformation:DescribeStacks",
+				"cloudformation:CreateChangeSet",
+				"cloudformation:DescribeChangeSet",
+				"cloudformation:DescribeStackEvents",
+				"cloudformation:ExecuteChangeSet",
+				"cloudformation:PreviewStackUpdate",
+				"cloudformation:UpdateStack",
+				"cloudformation:GetTemplateSummary",
+				"cloudformation:DeleteStack",
+				"aps:*",
+			]
+			resources: ["*"]
+		}, {
+			apiGroup: "aws.acorn.io"
+			verbs: [
+				"ec2:DescribeAvailabilityZones",
+				"ec2:DescribeVpcs",
+				"ec2:DescribeSubnets",
+				"ec2:DescribeRouteTables",
+			]
+			resources: ["*"]
+		},
+	]
+}
+
+secrets: "aws-context": {
+	external: "context://aws"
+	type:     "opaque"
+}

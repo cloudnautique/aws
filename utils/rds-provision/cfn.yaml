@@ -1,0 +1,30 @@
+Resources:
+  acorncloudnautique4cfe52ec94ebacornamptest846c65356234bd:
+    Type: AWS::APS::Workspace
+    Properties:
+      Alias: acorn-cloudnautique-4cfe52ec94eb-acorn-amp-test-846c65356-234bd
+      Tags:
+        - Key: acorn.io/account-id
+          Value: cloudnautique-4cfe52ec94eb
+        - Key: acorn.io/acorn-name
+          Value: amp-test
+        - Key: acorn.io/managed
+          Value: "true"
+        - Key: acorn.io/project-name
+          Value: acorn
+  CDKMetadata:
+    Type: AWS::CDK::Metadata
+    Properties:
+      Analytics: v2:deflate64:H4sIAAAAAAAA/zPSszDXM1BMLC/WTU7J1s3JTNKrDi5JTM7WAQrFJxYU6zmn5YXnF2UXFyQmp+oAOf6lJQWlJSBWUGpxfmlRcmqtTnq+oZ6RoZ6Bfk5mXmmFfmJuipmJYlZxZqZuUWleSWZuql4QhAYAnpw2NG8AAAA=
+Outputs:
+  AMPEndpointURL:
+    Value:
+      Fn::GetAtt:
+        - acorncloudnautique4cfe52ec94ebacornamptest846c65356234bd
+        - PrometheusEndpoint
+  AMPWorkspaceArn:
+    Value:
+      Fn::GetAtt:
+        - acorncloudnautique4cfe52ec94ebacornamptest846c65356234bd
+        - Arn
+
