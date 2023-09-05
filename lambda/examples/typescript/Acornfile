@@ -1,0 +1,12 @@
+ if args.dev {
+	containers: "dev-function": {
+		build: images."function-dev".containerBuild
+		ports: publish:     "8080/http"
+		dirs: "/var/task/": "./"
+	}
+}
+
+images: "function-dev": containerBuild: {
+	context: "."
+	target:  "dev"
+}

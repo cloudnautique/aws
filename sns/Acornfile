@@ -1,0 +1,117 @@
+name:        "AWS SNS Topic"
+description: "AWS SNS Topic"
+icon:        "icon.png"
+info:        "\(localData.info)"
+
+args: {
+	// Name of topic. Defaults to acorn.externalID
+	topicName: "billtesting"
+	// Key value pairs to apply to all AWS resources created by this Acorn
+	tags: {}
+}
+
+services: {
+	admin: {
+		generated: job: "apply"
+		default: true
+		consumer: permissions: rules: [{
+			apiGroup: "aws.acorn.io"
+			verbs: [
+				"sns:*",
+			]
+			resources: ["*"]
+		}]
+	}
+	publisher: {
+		generated: job: "apply"
+		consumer: permissions: rules: [{
+			apiGroup: "aws.acorn.io"
+			verbs: [
+				"sns:*",
+			]
+			resources: ["*"]
+		}]
+	}
+	subscriber: {
+		generated: job: "apply"
+		consumer: permissions: rules: [{
+			apiGroup: "aws.acorn.io"
+			verbs: [
+				"sns:*",
+			]
+			resources: ["*"]
+		}]
+	}
+}
+
+jobs: apply: {
+	build: {
+		context: "."
+		additionalContexts: {
+			common: "../libs"
+			utils:  "../utils"
+		}
+	}
+	files: "/app/config.json": std.toJSON(args)
+	events: ["create", "update", "delete"]
+	env: {
+		CDK_DEFAULT_ACCOUNT: "@{secrets.aws-context.account-id}"
+		CDK_DEFAULT_REGION:  "@{secrets.aws-context.aws-region}"
+		VPC_ID:              "@{secrets.aws-context.vpc-id}"
+		ACORN_ACCOUNT:       "@{acorn.account}"
+		ACORN_NAME:          "@{acorn.name}"
+		ACORN_PROJECT:       "@{acorn.project}"
+		ACORN_EXTERNAL_ID:   "@{acorn.externalID}"
+	}
+	permissions: rules: [{
+		apiGroup: "aws.acorn.io"
+		verbs: [
+			"cloudformation:DescribeStacks",
+			"cloudformation:CreateChangeSet",
+			"cloudformation:DescribeStackEvents",
+			"cloudformation:DescribeStackResources",
+			"cloudformation:DescribeChangeSet",
+			"cloudformation:ExecuteChangeSet",
+			"cloudformation:PreviewStackUpdate",
+			"cloudformation:UpdateStack",
+			"cloudformation:GetTemplateSummary",
+			"cloudformation:DeleteStack",
+			"sns:*",
+		]
+		resources: ["*"]
+	}, {
+		apiGroup: "api.acorn.io"
+		verbs: [
+			"create",
+		]
+		resources: ["events"]
+	}, {
+		apiGroup: "aws.acorn.io"
+		verbs: [
+			"ec2:DescribeAvailabilityZones",
+			"ec2:DescribeVpcs",
+			"ec2:DescribeSubnets",
+			"ec2:DescribeRouteTables",
+		]
+		resources: ["*"]
+	}]
+}
+
+secrets: "aws-context": {
+	external: "context://aws"
+	type:     "opaque"
+	data: {
+		"aws-region": ""
+		"account-id": ""
+		"vpc-id":     ""
+	}
+}
+
+localData: info: """
+	## Connection Information
+
+	## Sample Usage
+
+	## Example
+	
+	"""

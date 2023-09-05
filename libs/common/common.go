@@ -62,3 +62,11 @@ func NewAWSCDKStackProps() *awscdk.StackProps {
 		},
 	}
 }
+
+func MapStringToMapStringPtr(from map[string]string) *map[string]*string {
+	to := &map[string]*string{}
+	for k, v := range from {
+		(*to)[k] = jsii.String(v)
+	}
+	return to
+}

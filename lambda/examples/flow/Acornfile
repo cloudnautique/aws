@@ -1,0 +1,48 @@
+services: consumer: {
+	build: images."lambda-service".acornBuild
+	serviceArgs: {
+		lambdaArchitecture: "ARM_64"
+		ecrRepo:            "bill-lambda-testing"
+		ecrRepoTag:         "consumer"
+		runtimeEnvironmentVars: REGION: "#@{secrets.aws-context.aws-region}"
+		additionalPolicyArn: "arn:aws:iam::204011912374:policy/bill-testing-iam-policy"
+	}
+}
+
+services: publisher: {
+	build: images."lambda-service".acornBuild
+	serviceArgs: {
+		lambdaArchitecture:  "ARM_64"
+		ecrRepo:             "bill-lambda-testing"
+		ecrRepoTag:          "publisher"
+		additionalPolicyArn: "arn:aws:iam::204011912374:policy/bill-testing-publisher"
+		runtimeEnvironmentVars: {
+			REGION:    "@{secrets.aws-context.aws-region}"
+			TOPIC_ARN: "@{services.topic.data.arn}"
+		}
+	}
+}
+
+services: table: {
+	build: images.dynamodb.acornBuild
+	serviceArgs: tableName: "FlowTable"
+}
+
+services: topic: build: images.sns.acornBuild
+
+images: "lambda-service": acornBuild: {
+	context:   "../../"
+	acornfile: "../../Acornfile"
+}
+
+images: dynamodb: acornBuild: {
+	context:   "../../../dynamodb"
+	acornfile: "../../../dynamodb/Acornfile"
+}
+
+images: sns: acornBuild: {
+	context:   "../../../sns"
+	acornfile: "../../../sns/Acornfile"
+}
+
+secrets: "aws-context": external: "context://aws"

@@ -1,0 +1,85 @@
+args: {
+	additionalPolicyArn: ""
+	ecrRepoTag:          "latest"
+	ecrRepo:             ""
+	ecrRepoArn:          ""
+	lambdaArchitecture:  "x86_64"
+	functionTimeout:     360
+	runtimeEnvironmentVars: {}
+	tags: {}
+}
+
+services: function: generated: job: "apply"
+
+jobs: apply: {
+	build: {
+		context: "."
+		additionalContexts: common: "../libs/"
+	}
+	files: "/app/config.json": std.toJSON(args)
+	env: {
+		CDK_DEFAULT_ACCOUNT: "@{secrets.aws-context.account-id}"
+		CDK_DEFAULT_REGION:  "@{secrets.aws-context.aws-region}"
+		VPC_ID:              "@{secrets.aws-context.vpc-id}"
+		ACORN_ACCOUNT:       "@{acorn.account}"
+		ACORN_NAME:          "@{acorn.name}"
+		ACORN_PROJECT:       "@{acorn.project}"
+		ACORN_EXTERNAL_ID:   "@{acorn.externalID}"
+	}
+	events: ["create", "update", "delete"]
+	permissions: rules: [
+		{
+			apiGroup: "aws.acorn.io"
+			verbs: [
+				"cloudformation:DescribeStacks",
+				"cloudformation:CreateChangeSet",
+				"cloudformation:DescribeChangeSet",
+				"cloudformation:DescribeStackEvents",
+				"cloudformation:DescribeStackResources",
+				"cloudformation:ExecuteChangeSet",
+				"cloudformation:PreviewStackUpdate",
+				"cloudformation:UpdateStack",
+				"cloudformation:GetTemplateSummary",
+				"cloudformation:DeleteStack",
+				"lambda:*",
+				"iam:CreateRole",
+				"iam:AttachRolePolicy",
+				"iam:DetachRolePolicy",
+				"iam:ListRolePolicies",
+				"iam:GetRole",
+				"iam:GetRolePolicy",
+				"iam:PassRole",
+				"iam:DeleteRole",
+				"ecr:BatchGetImage",
+				"ecr:GetDownloadUrlForLayer",
+			]
+			resources: ["*"]
+		}, {
+			apiGroup: "aws.acorn.io"
+			verbs: [
+				"ec2:DescribeAvailabilityZones",
+				"ec2:DescribeVpcs",
+				"ec2:DescribeSubnets",
+				"ec2:DescribeRouteTables",
+			]
+			resources: ["*"]
+		}, {
+			apiGroup: "api.acorn.io"
+			verbs: [
+				"create",
+			]
+			resources: ["events"]
+		},
+	]
+}
+
+secrets: "aws-context": {
+	name:     "AWS Context"
+	external: "context://aws"
+	type:     "opaque"
+	data: {
+		"account-id": ""
+		"vpc-id":     ""
+		"aws-region": ""
+	}
+}
